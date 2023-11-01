@@ -31,8 +31,12 @@ class FeedService {
         if (posts) {
             def postDTOs = posts.stream().map(MapHelper::mapToPostDTO).toList()
             postDTOs.forEach {
-                it.reactions = reactionRepository.findByPostId(it.id).stream().map(MapHelper::mapToReactionDTO).collect(Collectors.toSet())
-                it.comments = commentRepository.findByPostId(it.id).stream().map(MapHelper::mapToCommentDTO()).collect(Collectors.toSet())
+                it.reactions = reactionRepository.findByPostId(it.id)
+                        .orElse([])
+                        .stream().map(MapHelper::mapToReactionDTO).collect(Collectors.toSet())
+                it.comments = commentRepository.findByPostId(it.id)
+                        .orElse([])
+                        .stream().map(MapHelper::mapToCommentDTO).collect(Collectors.toSet())
             }
 
             return postDTOs
@@ -54,8 +58,12 @@ class FeedService {
         if (posts) {
             def postDTOs = posts.stream().map(MapHelper::mapToPostDTO).toList()
             postDTOs.forEach {
-                it.reactions = reactionRepository.findByPostId(it.id).stream().map(MapHelper::mapToReactionDTO).collect(Collectors.toSet())
-                it.comments = commentRepository.findByPostId(it.id).stream().map(MapHelper::mapToCommentDTO()).collect(Collectors.toSet())
+                it.reactions = reactionRepository.findByPostId(it.id)
+                        .orElse([])
+                        .stream().map(MapHelper::mapToReactionDTO).collect(Collectors.toSet())
+                it.comments = commentRepository.findByPostId(it.id)
+                        .orElse([])
+                        .stream().map(MapHelper::mapToCommentDTO).collect(Collectors.toSet())
             }
 
             return postDTOs

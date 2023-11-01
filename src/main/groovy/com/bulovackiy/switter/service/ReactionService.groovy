@@ -14,13 +14,17 @@ class ReactionService {
 
     ReactionRepository reactionRepository
 
+    ReactionService(ReactionRepository reactionRepository) {
+        this.reactionRepository = reactionRepository
+    }
+
     ReactionDTO createReaction(String postId, ReactionDTO reactionDTO) {
         def reaction = new Reaction()
         reaction.type = reactionDTO.type
-        reaction.parent = reaction.parent
+        reaction.parent = reactionDTO.parent
         reaction.postId = postId
 
-        return MapHelper.mapToReactionDTO(reactionRepository.save())
+        return MapHelper.mapToReactionDTO(reactionRepository.save(reaction))
     }
 
     ReactionDTO updateReaction(String postId, ReactionDTO reactionDTO) {
@@ -29,7 +33,7 @@ class ReactionService {
 
         reaction.type = reactionDTO.type
 
-        return MapHelper.mapToReactionDTO(reactionRepository.save())
+        return MapHelper.mapToReactionDTO(reactionRepository.save(reaction))
     }
 
     void deleteReaction(String postId, String userId, String reactionId) {
