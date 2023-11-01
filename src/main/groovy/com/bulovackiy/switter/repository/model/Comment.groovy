@@ -3,11 +3,13 @@ package com.bulovackiy.switter.repository.model
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.MongoId
 
-@Document(collection = "posts")
-class Post {
+@Document(collection = "comments")
+class Comment {
 
     @MongoId
     private String id
+
+    private String postId
     private String content
     private String parent
 
@@ -19,12 +21,20 @@ class Post {
         this.id = id
     }
 
-    String getText() {
+    String getPostId() {
+        return postId
+    }
+
+    void setPostId(String postId) {
+        this.postId = postId
+    }
+
+    String getContent() {
         return content
     }
 
-    void setText(String text) {
-        this.content = text
+    void setContent(String content) {
+        this.content = content
     }
 
     String getParent() {

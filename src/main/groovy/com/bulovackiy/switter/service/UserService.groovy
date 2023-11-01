@@ -2,7 +2,9 @@ package com.bulovackiy.switter.service
 
 import com.bulovackiy.switter.exception.NotFoundException
 import com.bulovackiy.switter.exception.ValidationException
+import com.bulovackiy.switter.helper.MapHelper
 import com.bulovackiy.switter.model.SignupModel
+import com.bulovackiy.switter.model.UpdateUserModel
 import com.bulovackiy.switter.model.dto.UserDTO
 import com.bulovackiy.switter.repository.UserRepository
 import com.bulovackiy.switter.repository.model.User
@@ -26,14 +28,10 @@ class UserService {
         this.passwordEncoder = passwordEncoder
     }
 
-    boolean checkUserAccess(String userId) {
-        def principal = SecurityContextHolder.getContext().authentication.principal
-
-        if (principal instanceof UserDetailsImpl) {
-            return StringUtils.equals(principal.id, userId)
-        }
-
-        return false
+    Set<String> getUserFollowing(String userId) {
+        def user = userRepository.findById(userId)
+                .orElseThrow {new NotFoundException("User with id: " + userId + " not found")}
+        return user.following
     }
 
     UserDTO registerUser(SignupModel signup) {
@@ -47,8 +45,31 @@ class UserService {
         user.phoneNumber = signup.phoneNumber
         user.password = passwordEncoder.encode(signup.password)
 
-        return mapToUserDTO(userRepository.save(user))
+        return MapHelper.mapToUserDTO(userRepository.save(user))
     }
+
+    UserDTO updateUser(UpdateUserModel userModel, String userId) {
+        validateUpdateUserModel(userModel)
+        def user = userRepository.findById(userId)
+                .orElseThrow { new NotFoundException("User with id: " + userId + " not found")}
+
+        user.firstName = userModel.firstName ? userModel.firstName : user.firstName
+        user.lastName = userModel.lastName ? userModel.firstName : user.lastName
+        user.email = userModel.email ? userModel.email : user.email
+        user.phoneNumber = userModel.phoneNumber ? userModel.phoneNumber : user.phoneNumber
+
+        if (userModel.newPassword && userModel.oldPassword) {
+            if (passwordEncoder.matches(userModel.oldPassword, user.password)) {
+                user.password = passwordEncoder.encode(userModel.newPassword)
+            } else {
+                throw new ValidationException("Old Password is not the same with current")
+            }
+        }
+
+        return MapHelper.mapToUserDTO(userRepository.save(user))
+    }
+
+
 
     UserDTO addFollowingToUser(String userId, String followingUserId) {
         if (!userRepository.existsById(followingUserId)) {
@@ -63,7 +84,7 @@ class UserService {
             user.following.add(followingUserId)
         }
 
-        return mapToUserDTO(userRepository.save(user))
+        return MapHelper.mapToUserDTO(userRepository.save(user))
     }
 
     UserDTO deleteFollowing(String userId, String followingUserId) {
@@ -77,19 +98,7 @@ class UserService {
             user.following.remove(followingUserId)
         }
 
-        return mapToUserDTO(userRepository.save(user))
-    }
-
-    UserDTO mapToUserDTO(User user) {
-        def userDto = new UserDTO()
-        userDto.username = user.username
-        userDto.email = user.email
-        userDto.phoneNumber = user.phoneNumber
-        userDto.firstName = user.firstName
-        userDto.lastName = user.lastName
-        userDto.following = user.following
-
-        return userDto
+        return MapHelper.mapToUserDTO(userRepository.save(user))
     }
 
     private void validateSignup(SignupModel signup) throws ValidationException {
@@ -126,6 +135,24 @@ class UserService {
         if (!signup.password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,}\$")) {
              throw new ValidationException("Password must be minimum eight characters, one uppercase letter, " +
                      "one lowercase letter, one number and one special character")
+        }
+    }
+
+    private void validateUpdateUserModel(UpdateUserModel model) throws ValidationException {
+        if (!StringUtils.isBlank(model.email) && userRepository.existsByEmail(model.email)) {
+            throw new ValidationException("User with such email already exists")
+        }
+
+        if (!StringUtils.isBlank(model.phoneNumber) && !StringUtils.isNumeric(model.phoneNumber)){
+            throw new ValidationException("Phone Number must be numbers only")
+        } else if (!StringUtils.isBlank(model.phoneNumber) && userRepository.existsByPhoneNumber(model.phoneNumber)) {
+            throw new ValidationException("User with such phone number already exists")
+        }
+
+
+        if (!StringUtils.isBlank(model.newPassword) && !model.newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,}\$")) {
+            throw new ValidationException("Password must be minimum eight characters, one uppercase letter, " +
+                    "one lowercase letter, one number and one special character")
         }
     }
 }

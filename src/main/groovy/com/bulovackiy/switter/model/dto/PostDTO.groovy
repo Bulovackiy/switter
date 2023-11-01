@@ -5,7 +5,8 @@ class PostDTO {
     private String id
     private String text
     private String parent
-    private List<ReactionDTO> reactions
+    private Set<ReactionDTO> reactions
+    private Set<CommentDTO> comments
 
     String getId() {
         return id
@@ -23,19 +24,27 @@ class PostDTO {
         this.text = text
     }
 
-    List<ReactionDTO> getReactions() {
-        return reactions
-    }
-
-    void setReactions(List<ReactionDTO> reactions) {
-        this.reactions = reactions
-    }
-
     String getParent() {
         return parent
     }
 
     void setParent(String parent) {
         this.parent = parent
+    }
+
+    Set<ReactionDTO> getReactions() {
+        return reactions
+    }
+
+    void setReactions(Set<ReactionDTO> reactions) {
+        this.reactions = reactions
+    }
+
+    Set<CommentDTO> getComments() {
+        return comments
+    }
+
+    void setComments(Set<CommentDTO> comments) {
+        this.comments = comments
     }
 }

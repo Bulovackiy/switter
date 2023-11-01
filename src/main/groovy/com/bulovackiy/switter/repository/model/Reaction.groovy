@@ -10,6 +10,7 @@ class Reaction {
     private String id
     private EReaction type
     private String parent
+    private String postId
 
     String getId() {
         return id
@@ -33,5 +34,13 @@ class Reaction {
 
     void setParent(String parent) {
         this.parent = parent
+    }
+
+    String getPostId() {
+        return postId
+    }
+
+    void setPostId(String postId) {
+        this.postId = postId
     }
 }
